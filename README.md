@@ -26,7 +26,7 @@
 | ![fft_55](https://user-images.githubusercontent.com/67775090/236666228-9cda92d2-773e-42c5-87e9-cee944fb4fdf.png) | ![fft_56](https://user-images.githubusercontent.com/67775090/236666230-b807239d-0984-4b46-9a29-1014c2996041.png) | ![fft_57](https://user-images.githubusercontent.com/67775090/236666233-c3125121-e9b6-4f39-beee-7c88d83abb9d.png) |
 
 - First row: data characteristics & correlation distribution among variables 
-  - The upper part of the graph is the distribution line of the data, the yellow is the original data, and the red is the data after mean smoothing;
+  - The upper part of the graph is the distribution of the data, the yellow is the original data, and the red is the data after mean smoothing;
   - The lower half of the graph represents the distribution of correlation coefficients between this indicator and all 115 indicators.
 - Second row: frequency domain distribution of the data
 - Data pre-process: Max-Min Normalization & `numpy.nan_to_num`
@@ -81,7 +81,7 @@
 
 - Results on 6 key indicators prediction
 
-| Model               | RMSE Loss                    | R^2 Score Accuracy          |
+| Model               | `RMSE` Loss                    | `R2 Score` Accuracy          |
 |:-------------------:|:----------------------------:|:--------------------------:|
 | `CNN_LSTM`            | 0.047456759959459305±3.58e-3 | 0.9457983374595642±6.59e-3 |
 | CL-based Model           | 0.053124434375849953±8.71e-4 | 0.9473923005326821±2.04e-3 |
@@ -93,8 +93,8 @@
 - Results on 1 key indicators prediction (only Hot metal Si (01))
 - `EfficientNetV2_LSTM` requires the number of selected key variables must be divisible by 3
 
-| Model             | RMSE Loss            | R2 Score Accuracy  |
-|-------------------|----------------------|--------------------|
+| Model             | `RMSE` Loss            | `R2 Score` Accuracy  |
+|:-----------------:|:--------------------:|:------------------:|
 | `CNN_LSTM`          | 0.0405864343047142   | 0.8959161043167114 |
 | `Simple_LSTM`       | 0.039217736572027206 | 0.901961088180542  |
 | `ResNet_LSTM`       | 0.03927604481577873  | 0.9023586511611938 |
