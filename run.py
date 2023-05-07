@@ -97,7 +97,8 @@ def train_model_tf(model_name, cfg_name, data_io, plot=False, new_window_size=No
 
     model_path = "./models/" + model_name + time.strftime("_%Y-%m-%d_%H-%M-%S") + ".h5"
 
-    tb_callback = TensorBoard(log_dir='./logs/tensorboard_' + model_name +                               time.strftime("_%Y-%m-%d_%H-%M-%S"), # log directory
+    tb_callback = TensorBoard(log_dir='./logs/tensorboard_' + model_name + 
+                                  time.strftime("_%Y-%m-%d_%H-%M-%S"), # log directory
                               histogram_freq=0,  # Calculate the histogram according to epoch, 0 is not calculated
                               write_graph=True,  # Whether to store the network structure diagram
                               write_images=True, # Whether to visualize parameters
@@ -133,7 +134,7 @@ def train_model_tf(model_name, cfg_name, data_io, plot=False, new_window_size=No
                                                        "mse": LossFunction.mse})
 
     test_loss, test_acc = model.evaluate(x_test, y_test, verbose=1)
-    print(__file__, sys._getframe().f_lineno, "\n---------->",
+    print(__file__, sys._getframe().f_lineno, "---------->\n",
           'Loss    :', test_loss)
     print('Accuracy:', test_acc) 
 
@@ -191,7 +192,7 @@ def train_model_trans(model_name, cfg_name, data_io, plot=False, train=True):
         if plot: 
             visualization.plot_pred_true(y_pred, y_test[:, :, -1], select_dim)
             visualization.plot_pred_true_partraw(y_pred, y_test[:, :, -1], select_dim)
-        return None, result
+        return None, result[0]
 
     training_start_time = time.time()
 
@@ -204,8 +205,8 @@ def train_model_trans(model_name, cfg_name, data_io, plot=False, train=True):
         history['val_r_square'].append(test_acc)
         history['val_loss'].append(test_loss)
     
-        print('-' * 100)
-        print('| end of epoch {:3d} | time: {:5.2f}s | train acc & loss {:5.5f}, {:5.5f} | valid acc & loss {:5.5f}, {:5.5f}'.format(epoch, (time.time() - epoch_start_time),
+        print('-' * 107)
+        print('| end of epoch {:3d} | time: {:5.2f}s | train acc & loss {:5.5f}, {:5.5f} | valid acc & loss {:5.5f}, {:5.5f} |'.format(epoch, (time.time() - epoch_start_time),
                                         train_acc, train_loss, test_acc, test_loss))
 
         if test_loss < best_val_loss:
@@ -219,7 +220,7 @@ def train_model_trans(model_name, cfg_name, data_io, plot=False, train=True):
     test_loss, test_acc, y_pred = transformer.TransUtils.validate(best_model, test_data, batch_size, loss_criterion, accuracy_criterion)
     result.append([test_loss, test_acc])
     torch.save(best_model.state_dict(), model_save)
-    print(__file__, sys._getframe().f_lineno, "\n---------->",
+    print(__file__, sys._getframe().f_lineno, "---------->\n",
           "model's state_dict is saved in:", model_save, 
           "\nresults of bset model:", test_loss, test_acc)
     if plot: 
@@ -227,7 +228,7 @@ def train_model_trans(model_name, cfg_name, data_io, plot=False, train=True):
         visualization.plot_pred_true(y_pred, y_test[:, :, -1], select_dim)
         visualization.plot_pred_true_partraw(y_pred, y_test[:, :, -1], select_dim)
 
-    return None, result
+    return None, result[0]
 
 def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmode=0):
     prediction_cfg = prediction[cfg_name]
@@ -265,7 +266,7 @@ def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmo
                                     prediction_cfg["num_heads"],
                                     prediction_cfg["dropout"],
                                     prediction_cfg["num_layers"]]).to(device)
-    # print(model)
+    print(model)
 
     # optimizer, loss function, memory manager, and training & testing process
     batch_size = prediction_cfg["batch_size"]
@@ -291,7 +292,7 @@ def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmo
         result.append([test_loss, test_acc])
         if plot: 
             visualization.plot_pred_true(y_pred, y_test, select_dim)
-        return None, result
+        return None, result[0]
 
     training_start_time = time.time()
 
@@ -306,8 +307,8 @@ def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmo
         history['val_r_square'].append(test_acc)
         history['val_loss'].append(test_loss)
     
-        print('-' * 100)
-        print('| end of epoch {:3d} | time: {:5.2f}s | train acc & loss {:5.5f}, {:5.5f} | valid acc & loss {:5.5f}, {:5.5f}'.format(epoch, (time.time() - epoch_start_time),
+        print('-' * 107)
+        print('| end of epoch {:3d} | time: {:5.2f}s | train acc & loss {:5.5f}, {:5.5f} | valid acc & loss {:5.5f}, {:5.5f} |'.format(epoch, (time.time() - epoch_start_time),
                                         train_acc, train_loss, test_acc, test_loss))
 
         if test_loss < best_val_loss:
@@ -322,30 +323,29 @@ def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmo
     test_loss, test_acc, y_pred = CL.cl_utils.validate(best_model, (x_test, y_test), new_memory, batch_size, loss_criterion, accuracy_criterion)
     result.append([test_loss, test_acc])
     torch.save(best_model.state_dict(), model_save)
-    print(__file__, sys._getframe().f_lineno, "\n---------->",
+    print(__file__, sys._getframe().f_lineno, "---------->\n",
           "model's state_dict is saved in:", model_save, 
-          "results of bset model:", test_loss, test_acc)
+          "\nresults of bset model:", test_loss, test_acc)
     
     if plot: 
         visualization.tr_plot(history, 0)
         visualization.plot_pred_true(y_pred, y_test, select_dim)
 
-    return None, result
+    return None, result[0]
 
 
 if __name__ == "__main__":
     data_io = Data_IO(data_path=data_path)
     result = {}
     for model_cfg in model_configs:
-        print(model_cfg)
+        print(__file__, sys._getframe().f_lineno, "\n---------->", model_cfg)
         if model_cfg[1] == "transformer":
-            _, transformer_result = train_model_trans(model_cfg[0], model_cfg[1], data_io, 
-                                                      plot=True, train=True)
-            result[model_cfg[1] + "_&_" + model_cfg[0]] = [np.mean(np.array(transformer_result)[:, i]) for i in range(2)]
+            _, result[model_cfg[1] + "_&_" + model_cfg[0]] = train_model_trans(model_cfg[0], model_cfg[1], data_io, 
+                                                                               plot=True, train=True)
         elif model_cfg[1] == "continual_learning":
             _, result[model_cfg[1] + "_&_" + model_cfg[0]] = train_model_cl(model_cfg[0], model_cfg[1], data_io, 
                                                                             plot=True, train=True, softmode=0)
         else:
             _, result[model_cfg[1] + "_&_" + model_cfg[0]] = train_model_tf(model_cfg[0], model_cfg[1], 
                                                                             data_io, plot=True)
-    print(result)
+    print(__file__, sys._getframe().f_lineno, "---------->\n", result)

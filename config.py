@@ -3,7 +3,7 @@ global_params = {
     "model_path": "./models",
     "log_path": "./logs",
     "time_zone": "Asia/Singapore",
-    "window_size": 500,
+    "window_size": 50,
     "num_of_step": 1,
     "select_dim": [0] + [52 + i for i in range(5)],
     "split_ratio": 0.7,
@@ -69,7 +69,7 @@ prediction.update({
     "transformer": {
         "feature_size": 512, 
         "num_of_var": 6,
-        "select_dim": 500, 
+        "select_dim": 50, 
         "num_layers": 1, 
         "num_head": 16, 
         "dropout": 0.1,
