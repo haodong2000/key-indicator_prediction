@@ -33,7 +33,7 @@ from keras import backend as K
 
 from data_utils.get_input import Data_IO
 from data_utils.preprocessing import PreProcesser
-from config import global_params, prediction, soft, model_configs
+from config import global_params, prediction, model_configs
 
 data_path = global_params["data_path"]
 
@@ -45,6 +45,11 @@ import torch.nn as nn
 import math
 import copy
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--delay', help='number of time steps', type=int, default=0)
+args = parser.parse_args()
+
 torch.manual_seed(0)
 np.random.seed(0)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -52,33 +57,25 @@ print('device: ', device)
 
 def train_model_tf(model_name, cfg_name, data_io, plot=False, new_window_size=None):
     # data_io = Data_IO(data_path=data_path)
-    prediction_cfg = prediction[cfg_name] if cfg_name != "soft" else soft
+    prediction_cfg = prediction[cfg_name]
     select_dim = global_params["output_dim"]
     print(__file__, sys._getframe().f_lineno, "\n---------->", data_io.dataframe.columns[select_dim])
 
     window_size = new_window_size if new_window_size else prediction_cfg["window_size"]
     num_of_var = len(select_dim)
-    if cfg_name != "soft":
-        x_train, y_train, x_test, y_test = data_io.io_window_xy(select_dim=select_dim, 
-            window_size=window_size, num_of_step=1, delay=0, split_ratio=0.7, shuffle=False)
-    else:
-        x_train, y_train, x_test, y_test = data_io.io_soft_pd_xy(select_dim=select_dim, \
-                                                                 split_ratio=0.7, shuffle=False)
+    x_train, y_train, x_test, y_test = data_io.io_window_xy(select_dim=select_dim, 
+        window_size=window_size, num_of_step=1, delay=args.delay, split_ratio=0.7, shuffle=False)
     x_train, y_train, x_test, y_test = \
         np.nan_to_num(x_train), np.nan_to_num(y_train), np.nan_to_num(x_test), np.nan_to_num(y_test)
 
-    if cfg_name != "soft":
-        y_train = y_train.reshape((y_train.shape[0], y_train.shape[2]))
-        y_test = y_test.reshape((y_test.shape[0], y_test.shape[2]))
+    y_train = y_train.reshape((y_train.shape[0], y_train.shape[2]))
+    y_test = y_test.reshape((y_test.shape[0], y_test.shape[2]))
 
     print(__file__, sys._getframe().f_lineno, "\n---------->",
           x_train.shape, y_train.shape, "\n", x_test.shape, y_test.shape)
 
     model_obj = model_utils.Models(model_name=model_name)
-    model_params = [
-        ((x_train.shape[1], x_train.shape[2]) if cfg_name != "soft" else (x_train.shape[1], )), 
-        len(select_dim)
-    ]
+    model_params = [(x_train.shape[1], x_train.shape[2]), len(select_dim)]
     if cfg_name == "efficientnetv2_rnn": model_params += [prediction_cfg]
     model = model_obj.load_model(model_params)
 
@@ -92,7 +89,6 @@ def train_model_tf(model_name, cfg_name, data_io, plot=False, new_window_size=No
 
     plot_model(model, to_file="./models/" + model_name + time.strftime("_%Y-%m-%d_%H-%M-%S") + ".png", 
                show_shapes=True, show_layer_names=True)
-
     # visualkeras.layered_view(model, legend=True)
 
     model_path = "./models/" + model_name + time.strftime("_%Y-%m-%d_%H-%M-%S") + ".h5"
@@ -150,7 +146,7 @@ def train_model_trans(model_name, cfg_name, data_io, plot=False, train=True):
     result = []
 
     x_train, y_train, x_test, y_test = data_io.io_sequence_xy(select_dim=select_dim, \
-        window_size=window_size, num_of_step=1, delay=0, split_ratio=0.7, shuffle=True)
+        window_size=window_size, num_of_step=1, delay=args.delay, split_ratio=0.7, shuffle=True)
     x_train, y_train, x_test, y_test = \
         np.nan_to_num(x_train), np.nan_to_num(y_train), np.nan_to_num(x_test), np.nan_to_num(y_test)
     print(__file__, sys._getframe().f_lineno, "\n---------->", 
@@ -238,13 +234,13 @@ def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmo
 
     if softmode == 0:
         x_train, y_train, x_test, y_test = data_io.io_window_xy_CL(select_dim=select_dim, 
-            window_size=window_size, num_of_step=1, delay=0, split_ratio=0.7, shuffle=False)
+            window_size=window_size, num_of_step=1, delay=args.delay, split_ratio=0.7, shuffle=False)
     elif softmode == 1:
         x_train, y_train, x_test, y_test = data_io.io_window_xy_CL_soft(select_dim=select_dim, 
-            window_size=window_size, num_of_step=1, delay=0, split_ratio=0.7, shuffle=False)
+            window_size=window_size, num_of_step=1, delay=args.delay, split_ratio=0.7, shuffle=False)
     else:
         x_train, y_train, x_test, y_test = data_io.io_window_xy_CL_all(select_dim=select_dim, 
-            window_size=window_size, num_of_step=1, delay=0, split_ratio=0.7, shuffle=False)
+            window_size=window_size, num_of_step=1, delay=args.delay, split_ratio=0.7, shuffle=False)
     x_train, y_train, x_test, y_test = \
         np.nan_to_num(x_train), np.nan_to_num(y_train), np.nan_to_num(x_test), np.nan_to_num(y_test)
 
@@ -337,6 +333,7 @@ def train_model_cl(model_name, cfg_name, data_io, plot=False, train=True, softmo
 if __name__ == "__main__":
     data_io = Data_IO(data_path=data_path)
     result = {}
+    
     for model_cfg in model_configs:
         print(__file__, sys._getframe().f_lineno, "\n---------->", model_cfg)
         if model_cfg[1] == "transformer":
@@ -348,4 +345,12 @@ if __name__ == "__main__":
         else:
             _, result[model_cfg[1] + "_&_" + model_cfg[0]] = train_model_tf(model_cfg[0], model_cfg[1], 
                                                                             data_io, plot=True)
-    print(__file__, sys._getframe().f_lineno, "---------->\n", result)
+    
+    result_log_file = "./logs/results" + time.strftime("_%Y-%m-%d_%H-%M-%S") + ".txt"
+    print(__file__, sys._getframe().f_lineno, "---------->\n", result, 
+          "\nresults are saved in:", result_log_file)
+    with open(result_log_file, "w") as f:
+        f.write("{\n")
+        for model in result:
+            f.write("\t\'" + model + "\': " + str(result[model]) + ",\n")
+        f.write("}\n")

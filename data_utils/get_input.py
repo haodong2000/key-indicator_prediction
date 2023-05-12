@@ -215,7 +215,7 @@ class Data_IO:
                 pass
             elif idx <= data_len - delay - num_of_step:
                 x.append(np.array(select_data[idx - window_size:idx]).T)
-                y.append(np.array(select_data[idx - window_size + num_of_step:idx + num_of_step]).T)
+                y.append(np.array(select_data[idx - window_size + delay + num_of_step:idx + delay + num_of_step]).T)
             else:
                 break
             idx += 1

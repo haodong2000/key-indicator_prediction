@@ -97,14 +97,6 @@ prediction.update({
     },
 })
 
-soft = global_params.copy()
-soft.update({
-    "batch_size": 64,
-    "epochs": 200,
-    "learning_rate": 0.0001,
-    "decay_rate": 0.0001/200,
-})
-
 model_configs = [
     ["simple_lstm", "simple_lstm"], 
     ["cnn_rnn_no_batchnorm", "cnn_rnn"], 
